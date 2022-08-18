@@ -39,20 +39,30 @@ class LimiterApplicationTests {
 
     @Test
     void timeTest() throws InterruptedException {
+        var reqTimeLine = new ArrayList<Long>();
         var resArray = new ArrayList<HttpStatus>();
+
         for (var i = 0; i < 5; i++) {
+            reqTimeLine.add(System.currentTimeMillis());
             resArray.add(sendRequest());
             Thread.sleep(5000);
         }
         var successCount = resArray.stream().filter(r -> r.equals(HttpStatus.OK)).count();
         assertEquals(5, successCount);
 
+        reqTimeLine.add(System.currentTimeMillis());
         assertEquals(HttpStatus.BAD_GATEWAY, sendRequest());
 
-        Thread.sleep(60000 - 5000 * 5);
+        var time5thFromEnd = reqTimeLine.get(reqTimeLine.size() - 5);
+        Thread.sleep(60000 - (System.currentTimeMillis() - time5thFromEnd) + 1000);
 
         assertEquals(HttpStatus.OK, sendRequest());
         assertEquals(HttpStatus.BAD_GATEWAY, sendRequest());
+
+        for (var i = 0; i < 61; i++) {
+            assertEquals(HttpStatus.BAD_GATEWAY, sendRequest());
+            Thread.sleep(1000);
+        }
     }
 
     @Test

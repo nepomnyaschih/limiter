@@ -55,18 +55,18 @@ public class LimiterByIpAspect {
             }
 
             var cacheKey = ip + "_" + className + "_" + methodName;
-            var buffer =  cache.computeIfAbsent(cacheKey, k -> new CircularBuffer(rate));
+            var buffer = cache.computeIfAbsent(cacheKey, k -> new CircularBuffer(rate));
+            var currentTime = System.currentTimeMillis();
 
-            if (buffer.isEmpty() || buffer.size() < rate) {
-                buffer.add(System.currentTimeMillis());
-            } else {
-                var firstDate = buffer.peek();
-                var currentDate = System.currentTimeMillis();
-                if (currentDate - firstDate > time * 1000L * 60L) {
-                    buffer.delete();
-                    buffer.add(currentDate);
+            synchronized (buffer) {
+                if (buffer.isFull()) {
+                    var firstTime = buffer.peek();
+                    buffer.replaceFirst(currentTime);
+                    if (currentTime - firstTime <= time * 1000L * 60L) {
+                        throw new LimiterException(className, methodName, rate, time);
+                    }
                 } else {
-                    throw new LimiterException(className, methodName, rate, time);
+                    buffer.add(currentTime);
                 }
             }
 

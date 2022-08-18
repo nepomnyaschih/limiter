@@ -24,14 +24,6 @@ public class CircularBuffer {
         tail++;
     }
 
-    public void delete() throws Exception {
-        if (size == 0) {
-            throw new CircularBufferException("Empty Buffer");
-        }
-        head++;
-        size--;
-    }
-
     public long peek() throws CircularBufferException {
         if (size == 0) {
             throw new CircularBufferException("Empty Buffer");
@@ -40,11 +32,20 @@ public class CircularBuffer {
         return array[index];
     }
 
-    public boolean isEmpty() {
-        return size == 0;
+    public void replaceFirst(long element) throws CircularBufferException {
+        this.delete();
+        this.add(element);
     }
 
-    public int size() {
-        return size;
+    public boolean isFull() {
+        return size == capacity;
+    }
+
+    private void delete() throws CircularBufferException {
+        if (size == 0) {
+            throw new CircularBufferException("Empty Buffer");
+        }
+        head++;
+        size--;
     }
 }

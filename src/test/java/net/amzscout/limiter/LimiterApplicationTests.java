@@ -53,6 +53,11 @@ class LimiterApplicationTests {
 
         assertEquals(HttpStatus.OK, sendRequest());
         assertEquals(HttpStatus.BAD_GATEWAY, sendRequest());
+
+        for (var i = 0; i < 61; i++) {
+            assertEquals(HttpStatus.BAD_GATEWAY, sendRequest());
+            Thread.sleep(1000);
+        }
     }
 
     @Test
